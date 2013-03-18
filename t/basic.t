@@ -4,7 +4,8 @@ use strict;use warnings;
 
 use lib '../lib';
 use lib 'lib';
-use Test::More tests => 70;
+use Test::More tests => 74;
+use Test::Exception;
 
 use_ok('IPC::Transit') or exit;
 use_ok('IPC::Transit::Test') or exit;
@@ -25,6 +26,15 @@ foreach my $ct (1..20) {
 
 {   #raw
     ok IPC::Transit::send(qname => $IPC::Transit::test_qname, message => { a => 'b' }, serializer => 'json', compression => 'none'), 'send returned true';
+
+    dies_ok {IPC::Transit::send(message => { a => 'b' }, serializer => 'json', compression => 'none')} 'Missing qname';
+    dies_ok {IPC::Transit::send(qname => $IPC::Transit::test_qname, serializer => 'json', compression => 'none')} 'Missing message';
+
+    my $qname = 'test_qname';
+    my %message = ( a => 'b' );
+    dies_ok {IPC::Transit::send(qname => \$qname, message => { a => 'b' }, serializer => 'json', compression => 'none')} 'qname non-scalar';
+    dies_ok {IPC::Transit::send(qname => \$qname, message => %message, serializer => 'json', compression => 'none')} 'message non-reference';
+
     my $ret = IPC::Transit::receive(qname => $IPC::Transit::test_qname, raw => 1, nowait => 1);
     ok $ret, 'receive returned true';
     ok $ret->{message}->{a} eq 'b', 'basic message validation';
