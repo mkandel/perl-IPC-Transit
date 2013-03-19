@@ -115,6 +115,21 @@ IPC::Transit::Router - simple message routing and transformations
      xray => 'kilo',
  }
 
+
+=head2 config_trans()
+
+Configure a set of routes
+
+=head2 route_trans()
+
+Actually route a transaction
+
+=head1 Internal
+
+=head2 _match()
+
+Utility method for testing if a message matches a filter
+
 =head1 COPYRIGHT
 
 Copyright (c) 2012, Dana M. Diederich. All Rights Reserved.

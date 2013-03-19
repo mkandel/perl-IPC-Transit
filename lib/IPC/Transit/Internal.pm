@@ -11,38 +11,38 @@ use vars qw(
 );
 
 {
-my $queue_cache = {};
-sub _initialize_queue {
-    my %args = @_;
-    my $qid = _get_queue_id(%args);
-    if(not $queue_cache->{$qid}) {
-        $queue_cache->{$qid} = IPC::Msg->new($qid, _get_flags('create_ipc'))
-            or die "failed to _initialize_queue: failed to create queue_id $qid: $!\n";
+    my $queue_cache = {};
+    sub _initialize_queue {
+        my %args = @_;
+        my $qid = _get_queue_id(%args);
+        if(not $queue_cache->{$qid}) {
+            $queue_cache->{$qid} = IPC::Msg->new($qid, _get_flags('create_ipc'))
+                or die "failed to _initialize_queue: failed to create queue_id $qid: $!\n";
+        }
+        return $queue_cache->{$qid};
     }
-    return $queue_cache->{$qid};
-}
 
-sub _remove {
-    my %args = @_;
-    my $qname = $args{qname};
-    my $qid = _get_queue_id(%args);
-    $queue_cache->{$qid}->remove if $queue_cache->{$qid};
-    unlink _get_transit_config_dir() . "/$qname";
-}
-
-sub _stat {
-    my %args = @_;
-    my $qid = _get_queue_id(%args);
-    _initialize_queue(%args);
-    my @heads = qw(uid gid cuid cgid mode qnum qbytes lspid lrpid stime rtime ctime);
-    my $ret = {};
-    my @items = @{$queue_cache->{$qid}->stat};
-    foreach my $item (@items) {
-        $ret->{shift @heads} = $item;
+    sub _remove {
+        my %args = @_;
+        my $qname = $args{qname};
+        my $qid = _get_queue_id(%args);
+        $queue_cache->{$qid}->remove if $queue_cache->{$qid};
+        unlink _get_transit_config_dir() . "/$qname";
     }
-    $ret->{qname} = $args{qname};
-    return $ret;
-}
+
+    sub _stat {
+        my %args = @_;
+        my $qid = _get_queue_id(%args);
+        _initialize_queue(%args);
+        my @heads = qw(uid gid cuid cgid mode qnum qbytes lspid lrpid stime rtime ctime);
+        my $ret = {};
+        my @items = @{$queue_cache->{$qid}->stat};
+        foreach my $item (@items) {
+            $ret->{shift @heads} = $item;
+        }
+        $ret->{qname} = $args{qname};
+        return $ret;
+    }
 }
 
 sub _drop_all_queues {
@@ -156,28 +156,27 @@ sub _mk_queue_dir {
 
 #gnarly looking UNIX goop hidden below
 {
-my $flags = {
-    create_ipc =>       IPC::SysV::S_IRUSR() |
-                        IPC::SysV::S_IWUSR() |
-                        IPC::SysV::S_IRGRP() |
-                        IPC::SysV::S_IWGRP() |
-                        IPC::SysV::S_IROTH() |
-                        IPC::SysV::S_IWOTH() |
-                        IPC::SysV::IPC_CREAT(),
+    my $flags = {
+        create_ipc =>       IPC::SysV::S_IRUSR() |
+                            IPC::SysV::S_IWUSR() |
+                            IPC::SysV::S_IRGRP() |
+                            IPC::SysV::S_IWGRP() |
+                            IPC::SysV::S_IROTH() |
+                            IPC::SysV::S_IWOTH() |
+                            IPC::SysV::IPC_CREAT(),
 
-    nowait =>           IPC::SysV::IPC_NOWAIT(),
+        nowait =>           IPC::SysV::IPC_NOWAIT(),
 
-    exclusive_lock =>   POSIX::O_RDWR() |
-                        POSIX::O_CREAT() |
-                        POSIX::O_EXCL(),
+        exclusive_lock =>   POSIX::O_RDWR() |
+                            POSIX::O_CREAT() |
+                            POSIX::O_EXCL(),
 
-    nonblock =>         POSIX::O_NONBLOCK(),
-};
+        nonblock =>         POSIX::O_NONBLOCK(),
+    };
 
-sub
-_get_flags {
-    my $name = shift;
-    return $flags->{$name};
-}
+    sub _get_flags {
+        my $name = shift;
+        return $flags->{$name};
+    }
 }
 1;

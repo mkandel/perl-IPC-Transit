@@ -373,6 +373,34 @@ Returns various stats about the passed queue name, per IPC::Msg::stat:
 Return an array of hash references, each containing the information 
 obtained by the stat() call, one entry for each queue on the system.
 
+=head2 freeze()
+
+serialize a message
+
+=head2 thaw()
+
+de-serialize a message
+
+=head2 post_remote()
+
+Send a message to a queue on a remote host
+
+=head2 local_queue()
+
+Send a message to a queue local to the same host
+
+=head2 pack_message()
+
+Fully prepare a message for the wire, includes serializing the message and packing it 'for the wire'
+
+=head2 unpack_data()
+
+Fully de-serialize a 'from the wire' message, unpacks and de-serializes, returns the message
+
+=head2 serialize_wire_meta()/deserialize_wire_meta()
+
+Serialize/de-serialize message meta-data for 'wire' transfer
+
 =head1 SEE ALSO
 
 A zillion other queueing systems.
